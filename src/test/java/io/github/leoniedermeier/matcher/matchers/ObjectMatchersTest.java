@@ -9,57 +9,79 @@ import org.junit.jupiter.api.Test;
 
 class ObjectMatchersTest {
 
-	@Nested
-	class EqualTo {
-		@Test
-		void matches() {
-			assertMatcherTrue("123", equalTo("123"));
-		}
+    @Nested
+    class EqualTo {
+        @Test
+        void matches() {
+            assertMatcherTrue("123", equalTo("123"));
+        }
 
-		@Test
-		void not_matches() {
-			assertMatcherFalse("XXX", equalTo("123"));
-		}
-	}
+        @Test
+        void matches_null() {
+            assertMatcherTrue(null, equalTo(null));
+        }
 
-	@Nested
-	class IsSameInstance {
-		@Test
-		void matches() {
-			assertMatcherTrue("123", isSameInstance("123"));
-		}
+        @Test
+        void not_matches() {
+            assertMatcherFalse("XXX", equalTo("123"));
+        }
+    }
+    @Nested
+    class IsInstanceOf {
+        @Test
+        void matches() {
+            assertMatcherTrue("123", isInstanceOf(String.class));
+        }
 
-		@Test
-		void not_matches() {
-			assertMatcherFalse("XXX", isSameInstance("123"));
-		}
-		
-		@Test
-		void not_matches2() {
-			assertMatcherFalse("123", LogicMatchers.not(isSameInstance("123")));
-		}
-	}
-	
-	@Nested
-	class IsNull {
-	    @Test
-	    void matches() {
-	        assertMatcherTrue(null, isNull());
-	    }
-	    
-	    @Test
+        @Test
+        void not_matches() {
+            assertMatcherFalse("XXX", isInstanceOf(Number.class));
+        }
+
+        @Test
+        void not_matches_null() {
+            assertMatcherFalse(null, isInstanceOf(String.class));
+        }
+    }
+    
+    @Nested
+    class IsSameInstance {
+        @Test
+        void matches() {
+            assertMatcherTrue("123", isSameInstance("123"));
+        }
+
+        @Test
+        void not_matches() {
+            assertMatcherFalse("XXX", isSameInstance("123"));
+        }
+
+        @Test
+        void not_matches_null() {
+            assertMatcherFalse(null, isSameInstance("123"));
+        }
+    }
+
+    @Nested
+    class IsNull {
+        @Test
+        void matches() {
+            assertMatcherTrue(null, isNull());
+        }
+
+        @Test
         void not_matches() {
             assertMatcherFalse("1", isNull());
         }
-	}
-	
-	@Nested
+    }
+
+    @Nested
     class IsNotNull {
         @Test
         void matches() {
             assertMatcherTrue("1", isNotNull());
         }
-        
+
         @Test
         void not_matches() {
             assertMatcherFalse(null, isNotNull());
