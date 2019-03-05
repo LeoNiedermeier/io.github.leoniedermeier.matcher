@@ -23,6 +23,11 @@ class StringMatchersTest {
 		void not_matches() {
 			assertMatcherFalse("123_XXX", endsWith("xyz"));
 		}
+		
+		@Test
+        void not_matches_null() {
+            assertMatcherFalse(null, endsWith("xyz"));
+        }
 	}
 
 	@Nested

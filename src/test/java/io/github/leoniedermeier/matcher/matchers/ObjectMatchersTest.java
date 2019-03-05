@@ -39,4 +39,30 @@ class ObjectMatchersTest {
 			assertMatcherFalse("123", LogicMatchers.not(isSameInstance("123")));
 		}
 	}
+	
+	@Nested
+	class IsNull {
+	    @Test
+	    void matches() {
+	        assertMatcherTrue(null, isNull());
+	    }
+	    
+	    @Test
+        void not_matches() {
+            assertMatcherFalse("1", isNull());
+        }
+	}
+	
+	@Nested
+    class IsNotNull {
+        @Test
+        void matches() {
+            assertMatcherTrue("1", isNotNull());
+        }
+        
+        @Test
+        void not_matches() {
+            assertMatcherFalse(null, isNotNull());
+        }
+    }
 }

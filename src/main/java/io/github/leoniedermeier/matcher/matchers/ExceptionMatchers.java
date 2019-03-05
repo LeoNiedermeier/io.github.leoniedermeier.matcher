@@ -2,6 +2,7 @@ package io.github.leoniedermeier.matcher.matchers;
 
 import io.github.leoniedermeier.matcher.ExecutionContext;
 import io.github.leoniedermeier.matcher.Matcher;
+import io.github.leoniedermeier.matcher.NullSafeMatcher;
 
 /**
  * <h1>NOTE:</h1> An {@code Error} is a subclass of {@code Throwable} that
@@ -10,7 +11,16 @@ import io.github.leoniedermeier.matcher.Matcher;
  **/
 public final class ExceptionMatchers {
 
-    public static class ExecutableThrowsMatcher<T extends Exception> implements Matcher<Executable> {
+    @FunctionalInterface
+    public interface Executable {
+
+        @SuppressWarnings("squid:S00112")
+        // throw generic exception
+        void execute() throws Exception;
+
+    }
+
+    public static class ExecutableThrowsMatcher<T extends Exception> implements NullSafeMatcher<Executable> {
 
         private Class<T> expected;
         private Matcher<? super T> matcher = (x, y) -> true;
@@ -27,9 +37,9 @@ public final class ExceptionMatchers {
             Exception exception = execute(actual);
             // cast checked in first matches
             @SuppressWarnings("unchecked")
-            boolean b = isExceptionOfType(expected).matches(exception, context)
+            boolean b = isExceptionOfType(this.expected).matches(exception, context)
                     // TODO: message + "with"
-                    && matcher.matches((T) exception, context);
+                    && this.matcher.matches((T) exception, context);
             return b;
         }
 
@@ -39,18 +49,7 @@ public final class ExceptionMatchers {
         }
     }
 
-    @FunctionalInterface
-    public interface Executable {
-
-        void execute() throws Exception;
-
-    }
-
     public static <T extends Exception> ExecutableThrowsMatcher<T> throwsA(Class<T> expected) {
-        return new ExecutableThrowsMatcher<>(expected);
-    }
-
-    public static <T extends Exception> ExecutableThrowsMatcher<T> throwsAX(Class<T> expected) {
         return new ExecutableThrowsMatcher<>(expected);
     }
 
@@ -59,7 +58,20 @@ public final class ExceptionMatchers {
         return new ExecutableThrowsMatcher<>(expected).with(matcher);
     }
 
-    private static <T extends Exception> Matcher<T> isExceptionOfType(Class<?> expected) {
+    public static <T extends Exception> ExecutableThrowsMatcher<T> throwsAX(Class<T> expected) {
+        return new ExecutableThrowsMatcher<>(expected);
+    }
+
+    static Exception execute(Executable actual) {
+        try {
+            actual.execute();
+        } catch (Exception e) {
+            return e;
+        }
+        return null;
+    }
+
+    static <T extends Exception> Matcher<T> isExceptionOfType(Class<?> expected) {
         return (T actual, ExecutionContext context) -> {
             // same as isInstanceOf, but different messages
             context.setExpectation("exception of type <%s>", expected);
@@ -73,15 +85,6 @@ public final class ExceptionMatchers {
             }
             return false;
         };
-    }
-
-    private static Exception execute(Executable actual) {
-        try {
-            actual.execute();
-        } catch (Exception e) {
-            return e;
-        }
-        return null;
     }
 
     private ExceptionMatchers() {

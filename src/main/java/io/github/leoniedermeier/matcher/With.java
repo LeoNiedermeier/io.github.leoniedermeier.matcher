@@ -6,27 +6,21 @@ import io.github.leoniedermeier.matcher.internal.SimpleExecutionContext;
 
 public interface With<T, R> extends Matcher<T> {
 
-    default Is<T, R> with(Function<T, R> transformer, String description) {
-        return with(this, transformer, description);
+    static <T, R> Is<T, R> with(Matcher<? super T> matcher, Function<T, R> transformer, String description) {
+        return (Matcher<? super R> downstreamMatcher) -> (T actual, ExecutionContext context) -> {
+            if (!matcher.matches(actual, context)) {
+                return false;
+            }
+            SimpleExecutionContext downstreamContext = new SimpleExecutionContext();
+            context.addChild(downstreamContext);
+            downstreamContext.setExpectation(description);
+            downstreamContext.setMismatch(description);
+            R transformed = transformer.apply(actual);
+            return downstreamMatcher.matches(transformed, downstreamContext);
+        };
     }
 
-    static <T, R> Is<T, R> with(Matcher<? super T> matcher, Function<T, R> transformer, String description) {
-        return new Is<T, R>() {
-            @Override
-            public Matcher<T> is(Matcher<? super R> subMatcher) {
-                return (T actual, ExecutionContext context) -> {
-                    boolean matches = matcher.matches(actual, context);
-                    if (!matches) {
-                        return false;
-                    }
-                    SimpleExecutionContext downstream = new SimpleExecutionContext();
-                    context.addChild(downstream);
-                    downstream.setExpectation(description);
-                    downstream.setMismatch(description);
-                    R transformed = transformer.apply(actual);
-                    return subMatcher.matches(transformed, downstream);
-                };
-            }
-        };
+    default Is<T, R> with(Function<T, R> transformer, String description) {
+        return with(this, transformer, description);
     }
 }

@@ -19,7 +19,7 @@ class MyTest {
 	void test() {
 		Person person = new Person("Name");
 		person.addPhone(new Phone("0049-1234"));
-		person.addPhone(new Phone("0X049-ABCD"));
+		person.addPhone(new Phone("0049-ABCD"));
 
 		assertThat(person.getPhones(), size(2));
 		//assertThat(person.getPhones(), allMatch(property(Phone::getNumber).is(startsWith("0049"))));

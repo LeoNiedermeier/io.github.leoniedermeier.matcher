@@ -1,6 +1,7 @@
 package io.github.leoniedermeier.matcher.matchers;
 
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.function.IntPredicate;
 
 import io.github.leoniedermeier.matcher.ExecutionContext;
@@ -23,7 +24,7 @@ public final class ComparableMatchers {
             this.expectationText = expectationText;
         }
     }
-    
+
     public static <T extends Comparable<T>> Matcher<T> greaterOrEqualsThan(T expected) {
         return createMatcher(expected, T::compareTo, false, Compare.GREATER_OR_EQUALS_THAN);
     }
@@ -58,6 +59,9 @@ public final class ComparableMatchers {
 
     private static <T> Matcher<T> createMatcher(T expected, Comparator<? super T> comparator, boolean ld,
             Compare compare) {
+        Objects.requireNonNull(expected, "ComparableMatchers - expected is <null>");
+        Objects.requireNonNull(comparator, "ComparableMatchers - comparator is <null>");
+
         return (T actual, ExecutionContext description) -> {
             description.setExpectation("is " + compare.expectationText + " <%s>" + (ld ? " compared by <%s>" : ""),
                     expected, comparator);
