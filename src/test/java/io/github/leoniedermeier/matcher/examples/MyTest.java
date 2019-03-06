@@ -3,7 +3,7 @@ package io.github.leoniedermeier.matcher.examples;
 import static io.github.leoniedermeier.matcher.MatcherAssert.assertThat;
 import static io.github.leoniedermeier.matcher.matchers.IterableMatchers.allMatch;
 import static io.github.leoniedermeier.matcher.matchers.IterableMatchers.size;
-import static io.github.leoniedermeier.matcher.matchers.ObjectMatchers.isNotNull;
+import static io.github.leoniedermeier.matcher.matchers.ObjectMatchers.*;
 import static io.github.leoniedermeier.matcher.matchers.StringMatchers.startsWith;
 import static io.github.leoniedermeier.matcher.util.PropertyAccess.property;
 
@@ -36,11 +36,11 @@ class MyTest {
 	}
 	
 	static Matcher<Person> allPhoneNumbersStartWith2(String expectation) {
-		return (actual, description) -> {
-			description.setExpectation("all phone number starts with <%s>", expectation);
+		return (actual, context) -> {
+			context.setExpectation("all phone number starts with <%s>", expectation);
 			  Optional<String> findAny = actual.getPhones().stream().map(Phone::getNumber).filter(s -> !s.startsWith(expectation)).findAny();
 			  if(findAny.isPresent()) {
-				  description.setMismatch("<%s> a phone number starts not with <%s>", findAny.get(), expectation);
+				  context.setMismatch("<%s> a phone number starts not with <%s>", findAny.get(), expectation);
 			  }
 			  return !findAny.isPresent();
 		};

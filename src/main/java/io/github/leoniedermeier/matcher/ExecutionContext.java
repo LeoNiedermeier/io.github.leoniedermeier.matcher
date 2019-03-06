@@ -1,20 +1,93 @@
 package io.github.leoniedermeier.matcher;
 
-public interface ExecutionContext {
+import java.util.ArrayList;
+import java.util.List;
 
-    void addChild(ExecutionContext description);
+public class ExecutionContext {
 
-    void clearChildren();
+    public static class Entry {
+        private Object[] arguments;
+        private String text;
 
-    Object getActual();
+        public Entry(String text, Object... arguments) {
+            this.text = text;
+            this.arguments = arguments;
+        }
 
-    void setActual(Object object);
+        @Override
+        public String toString() {
+            return String.format(this.text, this.arguments);
+        }
+    }
 
-    void setExpectation(String text, Object... object);
+    private Object actual;
 
-    void setMismatch(String text, Object... object);
+    private final List<ExecutionContext> childs = new ArrayList<>();
 
-    void setMatched(boolean matched);
+    private Entry expectation;
+    private boolean invers;
 
-    boolean isMatched();
+    private boolean matched;
+
+    private Entry mismatch;
+
+    public ExecutionContext() {
+        super();
+    }
+
+    
+    public void addChild(ExecutionContext context) {
+        this.childs.add(context);
+    }
+
+     
+    public void clearChildren() {
+        this.childs.clear();
+    }
+
+     
+    public Object getActual() {
+        return this.actual;
+    }
+
+    public List<ExecutionContext> getChilds() {
+        return this.childs;
+    }
+
+    public Entry getExpectation() {
+        return this.expectation;
+    }
+
+    public Entry getMismatch() {
+        return this.mismatch;
+    }
+
+    
+    public boolean isInvers() {
+        return this.invers;
+    }
+
+    public boolean isMatched() {
+        return this.matched;
+    }
+
+    public void setActual(Object actual) {
+        this.actual = actual;
+    }
+
+    public void setExpectation(String text, Object... arguments) {
+        this.expectation = new Entry(text, arguments);
+    }
+
+    public void setInvers(boolean invers) {
+        this.invers = invers;
+    }
+
+    public void setMatched(boolean matched) {
+        this.matched = matched;
+    }
+
+    public void setMismatch(String text, Object... arguments) {
+        this.mismatch = new Entry(text, arguments);
+    }
 }

@@ -52,12 +52,12 @@ public final class IterableMatchers {
     }
 
     public static <T> NullSafeMatcher<Iterable<T>> size(int expectation) {
-        return (actual, description) -> size(ObjectMatchers.equalTo(expectation), actual, description);
+        return (Iterable<T> actual, ExecutionContext context) -> size(ObjectMatchers.equalTo(expectation), actual, context);
     }
 
     public static <T> Matcher<Iterable<T>> size(Matcher<? super Integer> matcher) {
         Objects.requireNonNull(matcher, "IterableMatchers.size - matcher is <null>");
-        return (actual, description) -> size(matcher, actual, description);
+        return (Iterable<T> actual, ExecutionContext context) -> size(matcher, actual, context);
     }
 
     private static int calculateSize(Iterable<?> actual) {
@@ -77,10 +77,10 @@ public final class IterableMatchers {
     }
 
     private static <T> boolean size(Matcher<? super Integer> matcher, Iterable<T> actual,
-            ExecutionContext description) {
-        description.setExpectation("a iterable with size");
-        description.setMismatch("a iterable with size");
-        return matcher.matches(calculateSize(actual), description);
+            ExecutionContext context) {
+        context.setExpectation("a iterable with size");
+        context.setMismatch("a iterable with size");
+        return matcher.matches(calculateSize(actual), context);
     }
 
     private IterableMatchers() {

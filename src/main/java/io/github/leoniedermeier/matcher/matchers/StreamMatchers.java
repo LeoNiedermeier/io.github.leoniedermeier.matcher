@@ -14,7 +14,7 @@ public final class StreamMatchers {
         return (Stream<T> actual, ExecutionContext context) -> {
             context.setExpectation("every item");
             context.setMismatch("one item");
-            return actual.allMatch(t -> matcher.matches(t, context));
+            return actual.allMatch(t -> callDownstreamMatcher(t,matcher, context));
         };
     }
 
@@ -22,7 +22,7 @@ public final class StreamMatchers {
         Objects.requireNonNull(matcher, "StreamMatchers.anyMatch - matcher is <null>");
         return (Stream<T> actual, ExecutionContext context) -> {
             context.setExpectation("at least one item");
-            context.setMismatch("no item");
+            context.setMismatch("no item matches:");
             return actual.anyMatch(t -> matcher.matches(t, context));
         };
     }
@@ -32,17 +32,23 @@ public final class StreamMatchers {
         return (Stream<T> actual, ExecutionContext context) -> {
             context.setExpectation("no item");
             context.setMismatch("one item");
-            return actual.noneMatch(t -> matcher.matches(t, context));
+            context.setInvers(true);
+            return actual.noneMatch(t -> callDownstreamMatcher(t,matcher, context));
         };
     }
 
+    
+    private static<T> boolean callDownstreamMatcher(T actual, Matcher<? super T> matcher, ExecutionContext context) {
+        context.clearChildren();
+        return matcher.matches(actual, context);
+    }
     public static <T> NullSafeMatcher<Stream<T>> size(long expectation) {
-        return (actual, description) -> size(ObjectMatchers.equalTo(expectation), actual, description);
+        return (actual, context) -> size(ObjectMatchers.equalTo(expectation), actual, context);
     }
 
     public static <T> NullSafeMatcher<Stream<T>> size(Matcher<? super Long> matcher) {
         Objects.requireNonNull(matcher, "StreamMatchers.size - matcher is <null>");
-        return (actual, description) -> size(matcher, actual, description);
+        return (actual, context) -> size(matcher, actual, context);
     }
 
     private static <T> boolean size(Matcher<? super Long> matcher, Stream<T> actual, ExecutionContext description) {

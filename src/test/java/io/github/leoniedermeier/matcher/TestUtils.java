@@ -6,15 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.function.Function;
 
-import io.github.leoniedermeier.matcher.internal.DescriptionStringifier;
-import io.github.leoniedermeier.matcher.internal.SimpleExecutionContext;
+import io.github.leoniedermeier.matcher.internal.DefaultSimpleExecutionContextMessageCreator;
 
 public class TestUtils {
 
-    public static <T> SimpleExecutionContext assertMatcher(T input, boolean downstreamMatcherResult,
+    public static <T> ExecutionContext assertMatcher(T input, boolean downstreamMatcherResult,
             Function<TestMatcher, Matcher<T>> matcher, boolean expectedMatcherOutcome,
             Object expectedActualInDownstreamMatcher) {
-        SimpleExecutionContext context = new SimpleExecutionContext();
+        ExecutionContext context = new ExecutionContext();
         TestMatcher testMatcher = new TestMatcher(downstreamMatcherResult);
         assertTrue(expectedMatcherOutcome == matcher.apply(testMatcher).matches(input, context),
                 "Macther returned false");
@@ -28,23 +27,22 @@ public class TestUtils {
     }
 
     public static <T> TestMatcher assertMatcherFalse(T input, Function<TestMatcher, Matcher<T>> matcher) {
-        SimpleExecutionContext context = new SimpleExecutionContext();
+        ExecutionContext context = new ExecutionContext();
         TestMatcher testMatcher = new TestMatcher(true);
         assertFalse(matcher.apply(testMatcher).matches(input, context), "Matcher returned true");
         print(context);
         return testMatcher;
     }
 
-    public static <T> SimpleExecutionContext assertMatcherFalse(T actual, Matcher<T> matcher) {
-        SimpleExecutionContext context = new SimpleExecutionContext();
+    public static <T> ExecutionContext assertMatcherFalse(T actual, Matcher<T> matcher) {
+        ExecutionContext context = new ExecutionContext();
         assertFalse(matcher.matches(actual, context));
-        System.out.println("====================");
-        System.out.println(DescriptionStringifier.getExpectationsAsSting(context));
+        print(context);
 
         return context;
     }
 
-    public static <T> SimpleExecutionContext assertMatcherTrue(T input, boolean downstreamMatcherResult,
+    public static <T> ExecutionContext assertMatcherTrue(T input, boolean downstreamMatcherResult,
             Function<TestMatcher, Matcher<T>> matcher, Object expectedActualInDownstreamMatcher) {
 
         return assertMatcher(input, downstreamMatcherResult, matcher, true, expectedActualInDownstreamMatcher);
@@ -52,15 +50,15 @@ public class TestUtils {
 
     // (x -> true) ->
     public static <T> TestMatcher assertMatcherTrue(T input, Function<TestMatcher, Matcher<T>> matcher) {
-        SimpleExecutionContext context = new SimpleExecutionContext();
+        ExecutionContext context = new ExecutionContext();
         TestMatcher testMatcher = new TestMatcher(x -> true);
         assertTrue(matcher.apply(testMatcher).matches(input, context), "Matcher returned false");
         print(context);
         return testMatcher;
     }
 
-    public static <T> SimpleExecutionContext assertMatcherTrue(T actual, Matcher<T> matcher) {
-        SimpleExecutionContext context = new SimpleExecutionContext();
+    public static <T> ExecutionContext assertMatcherTrue(T actual, Matcher<T> matcher) {
+        ExecutionContext context = new ExecutionContext();
         assertTrue(matcher.matches(actual, context));
         print(context);
 
@@ -78,9 +76,9 @@ public class TestUtils {
         assertTestMatcher(testMatcher, 0, null);
     }
 
-    private static void print(SimpleExecutionContext context) {
+    private static void print(ExecutionContext context) {
         System.out.println("====================");
-        System.out.println(DescriptionStringifier.getExpectationsAsSting(context));
+        System.out.println(new DefaultSimpleExecutionContextMessageCreator().toMessage(context));
     }
 
 }

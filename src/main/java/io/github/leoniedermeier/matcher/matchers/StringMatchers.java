@@ -31,8 +31,17 @@ public final class StringMatchers {
         Objects.requireNonNull(expectation, "StringMatchers.startsWith - expectation is <null>");
         return (String actual, ExecutionContext context) -> {
             context.setExpectation("a string starts with <%s>", expectation);
-            context.setMismatch("<%s> which not starts not with <%s>", actual, expectation);
+            context.setMismatch("<%s> which not starts with <%s>", actual, expectation);
             return actual.startsWith(expectation);
+        };
+    }
+    
+    public static NullSafeMatcher<String> contains(String expectation) {
+        Objects.requireNonNull(expectation, "StringMatchers.startsWith - expectation is <null>");
+        return (String actual, ExecutionContext context) -> {
+            context.setExpectation("a string contains <%s>", expectation);
+            context.setMismatch("<%s> does not contain <%s>", actual, expectation);
+            return actual.contains(expectation);
         };
     }
 

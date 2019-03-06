@@ -3,15 +3,15 @@ package io.github.leoniedermeier.matcher.matchers;
 import static io.github.leoniedermeier.matcher.TestUtils.assertMatcherFalse;
 import static io.github.leoniedermeier.matcher.TestUtils.assertMatcherTrue;
 import static io.github.leoniedermeier.matcher.TestUtils.assertTestMatcher;
-import static io.github.leoniedermeier.matcher.matchers.LogicMatchers.and;
-import static io.github.leoniedermeier.matcher.matchers.LogicMatchers.not;
+import static io.github.leoniedermeier.matcher.matchers.LogicalOperators.and;
+import static io.github.leoniedermeier.matcher.matchers.LogicalOperators.not;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import io.github.leoniedermeier.matcher.TestMatcher;
 
-class LogicMatchersTest {
+class LogicalOperatorsTest {
 
     @Nested
     class And {
