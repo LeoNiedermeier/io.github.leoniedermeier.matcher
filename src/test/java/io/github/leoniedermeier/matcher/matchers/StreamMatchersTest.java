@@ -3,7 +3,7 @@ package io.github.leoniedermeier.matcher.matchers;
 import static io.github.leoniedermeier.matcher.TestUtils.assertMatcherFalse;
 import static io.github.leoniedermeier.matcher.TestUtils.assertMatcherTrue;
 import static io.github.leoniedermeier.matcher.TestUtils.assertTestMatcher;
-import static io.github.leoniedermeier.matcher.TestUtils.testActualNull;
+import static io.github.leoniedermeier.matcher.TestUtils.testNullNotMatches;
 import static io.github.leoniedermeier.matcher.matchers.StreamMatchers.allMatch;
 import static io.github.leoniedermeier.matcher.matchers.StreamMatchers.anyMatch;
 import static io.github.leoniedermeier.matcher.matchers.StreamMatchers.noneMatch;
@@ -38,7 +38,7 @@ class StreamMatchersTest {
 
         @Test
         void not_matches_null() {
-            testActualNull(StreamMatchers::allMatch);
+            testNullNotMatches(StreamMatchers::allMatch);
         }
     }
 
@@ -61,7 +61,28 @@ class StreamMatchersTest {
 
         @Test
         void not_matches_null() {
-            testActualNull(StreamMatchers::anyMatch);
+            testNullNotMatches(StreamMatchers::anyMatch);
+        }
+    }
+
+    @Nested
+    class ContainsAll {
+        @Test
+        void matches() {
+            TestMatcher testMatcher1 = new TestMatcher("X"::equals);
+            TestMatcher testMatcher2 = new TestMatcher("Y"::equals);
+            assertMatcherTrue(Stream.of("1", "X", "3", "Y","5"), StreamMatchers.containsAll(testMatcher1, testMatcher2));
+            assertTestMatcher(testMatcher1, 2, asList("1", "X"));
+            assertTestMatcher(testMatcher2, 4, asList("1", "X", "3", "Y"));
+        }
+
+        @Test
+        void no_matches() {
+            TestMatcher testMatcher1 = new TestMatcher("X"::equals);
+            TestMatcher testMatcher2 = new TestMatcher("Y"::equals);
+            assertMatcherFalse(Stream.of("1", "X", "3"), StreamMatchers.containsAll(testMatcher1, testMatcher2));
+            assertTestMatcher(testMatcher1, 2, asList("1", "X"));
+            assertTestMatcher(testMatcher2, 3, asList("1", "X", "3"));
         }
     }
 
@@ -84,7 +105,7 @@ class StreamMatchersTest {
 
         @Test
         void not_matches_null() {
-            testActualNull(StreamMatchers::noneMatch);
+            testNullNotMatches(StreamMatchers::noneMatch);
         }
     }
 
@@ -122,5 +143,4 @@ class StreamMatchersTest {
             assertTestMatcher(testMatcher, 1, 3L);
         }
     }
-
 }

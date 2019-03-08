@@ -4,51 +4,65 @@ import java.util.Objects;
 
 import io.github.leoniedermeier.matcher.ExecutionContext;
 import io.github.leoniedermeier.matcher.Matcher;
-import io.github.leoniedermeier.matcher.NullSafeMatcher;
 
 public final class StringMatchers {
 
-    public static NullSafeMatcher<String> endsWith(String expectation) {
+    public static Matcher<String> contains(String expectation) {
+        Objects.requireNonNull(expectation, "StringMatchers.startsWith - expectation is <null>");
+        return new AbstractTerminalMatcher<String>("a string contains <%s>", expectation) {
+
+            @Override
+            public boolean doesMatch(String actual, ExecutionContext context) {
+                if (!actual.contains(expectation)) {
+                    context.setMismatch("<%s> does not contain <%s>", actual, expectation);
+                    return false;
+                }
+                return true;
+            }
+
+        };
+    }
+
+    public static Matcher<String> endsWith(String expectation) {
         Objects.requireNonNull(expectation, "StringMatchers.endsWith - expectation is <null>");
-        return (String actual, ExecutionContext context) -> {
-            context.setExpectation("a string ends with <%s>", expectation);
-            context.setMismatch("<%s> which not ends not with <%s>", actual, expectation);
-            return actual.endsWith(expectation);
+        return new AbstractTerminalMatcher<String>("a string ends with <%s>", expectation) {
+
+            @Override
+            public boolean doesMatch(@NonNull String actual, ExecutionContext context) {
+                if (!actual.endsWith(expectation)) {
+                    context.setMismatch("<%s> which not ends with <%s>", actual, expectation);
+                    return false;
+                }
+                return true;
+            }
         };
     }
 
-    public static NullSafeMatcher<String> length(int expectation) {
-        return (String actual, ExecutionContext context) -> length(ObjectMatchers.equalTo(expectation), actual,
-                context);
+    public static Matcher<String> length(int expectation) {
+        return length(ObjectMatchers.equalTo(expectation));
     }
 
-    public static NullSafeMatcher<String> length(Matcher<? super Integer> matcher) {
+    public static Matcher<String> length(Matcher<? super Integer> matcher) {
         Objects.requireNonNull(matcher, "StringMatchers.length - matcher is <null>");
-        return (String actual, ExecutionContext context) -> length(matcher, actual, context);
+
+        return PropertyAccess.<String, Integer>property(String::length, "a string with length")
+                .is(matcher);
     }
 
-    public static NullSafeMatcher<String> startsWith(String expectation) {
+    public static Matcher<String> startsWith(String expectation) {
         Objects.requireNonNull(expectation, "StringMatchers.startsWith - expectation is <null>");
-        return (String actual, ExecutionContext context) -> {
-            context.setExpectation("a string starts with <%s>", expectation);
-            context.setMismatch("<%s> which not starts with <%s>", actual, expectation);
-            return actual.startsWith(expectation);
-        };
-    }
-    
-    public static NullSafeMatcher<String> contains(String expectation) {
-        Objects.requireNonNull(expectation, "StringMatchers.startsWith - expectation is <null>");
-        return (String actual, ExecutionContext context) -> {
-            context.setExpectation("a string contains <%s>", expectation);
-            context.setMismatch("<%s> does not contain <%s>", actual, expectation);
-            return actual.contains(expectation);
-        };
-    }
+        return new AbstractTerminalMatcher<String>("a string starts with <%s>", expectation) {
 
-    private static boolean length(Matcher<? super Integer> matcher, String actual, ExecutionContext context) {
-        context.setExpectation("a string with length");
-        context.setMismatch("a string with length");
-        return matcher.matches(Integer.valueOf(actual.length()), context);
+            @Override
+            public boolean doesMatch(@NonNull String actual, ExecutionContext context) {
+                if (!actual.startsWith(expectation)) {
+                    context.setMismatch("<%s> does not start with <%s>", actual, expectation);
+                    return false;
+                }
+                return true;
+            }
+
+        };
     }
 
     private StringMatchers() {

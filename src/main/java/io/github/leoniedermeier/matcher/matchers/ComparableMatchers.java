@@ -62,11 +62,17 @@ public final class ComparableMatchers {
         Objects.requireNonNull(expected, "ComparableMatchers - expected is <null>");
         Objects.requireNonNull(comparator, "ComparableMatchers - comparator is <null>");
 
-        return (T actual, ExecutionContext context) -> {
-            context.setExpectation("is " + compare.expectationText + " <%s>" + (ld ? " compared by <%s>" : ""),
-                    expected, comparator);
-            context.setMismatch("<%s> which is not " + compare.expectationText + " <%s>", actual, expected);
-            return compare.predicate.test(comparator.compare(actual, expected));
+        return new AbstractTerminalMatcher<T>(
+                "is " + compare.expectationText + " <%s>" + (ld ? " compared by <%s>" : ""), expected, comparator) {
+
+            @Override
+            public boolean doesMatch(T actual, ExecutionContext context) {
+                if (!compare.predicate.test(comparator.compare(actual, expected))) {
+                    context.setMismatch("<%s> which is not " + compare.expectationText + " <%s>", actual, expected);
+                    return false;
+                }
+                return true;
+            }
         };
     }
 

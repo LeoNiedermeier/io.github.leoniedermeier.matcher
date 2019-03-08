@@ -2,12 +2,12 @@ package io.github.leoniedermeier.matcher.matchers;
 
 import io.github.leoniedermeier.matcher.ExecutionContext;
 import io.github.leoniedermeier.matcher.Matcher;
-import io.github.leoniedermeier.matcher.NullSafeMatcher;
 
 /**
- * <h1>NOTE:</h1> An {@code Error} is a subclass of {@code Throwable} that
- * indicates serious problems that a reasonable application should not try to
- * catch. Most such errors are abnormal conditions.
+ * <h1>NOTE (from javadoc):</h1> An {@code Error} is a subclass of
+ * {@code Throwable} that indicates serious problems that a reasonable
+ * application should not try to catch. Most such errors are abnormal
+ * conditions.
  **/
 public final class ExceptionMatchers {
 
@@ -20,70 +20,68 @@ public final class ExceptionMatchers {
 
     }
 
-    public static class ExecutableThrowsMatcher<T extends Exception> implements NullSafeMatcher<Executable> {
+    public static class ExecutableThrowsMatcher<T extends Exception> extends AbstractIntermediateMatcher<Executable> {
 
+        private Matcher<Exception> exceptionOfType;
         private Class<T> expected;
-        private Matcher<? super T> matcher = (x, y) -> true;
 
-        public ExecutableThrowsMatcher(Class<T> expected) {
+        public ExecutableThrowsMatcher(Class<T> expected, Matcher<Exception> exceptionOfType) {
+            super("execution throws", exceptionOfType);
             this.expected = expected;
+            this.exceptionOfType = exceptionOfType;
         }
 
         @Override
         public boolean doesMatch(Executable actual, ExecutionContext context) {
             // Details in matcher below
-            context.setExpectation("execution throws");
-            context.setMismatch("execution throws");
             Exception exception = execute(actual);
-            // cast checked in first matches
-            @SuppressWarnings("unchecked")
-            boolean b = isExceptionOfType(this.expected).matches(exception, context)
-                    // TODO: message + "with"
-                    && this.matcher.matches((T) exception, context);
-            return b;
+            if (!this.exceptionOfType.matches(exception, context)) {
+                context.setMismatch("execution throws");
+                return false;
+            }
+            return true;
         }
 
         public Matcher<Executable> with(Matcher<? super T> matcher) {
-            this.matcher = matcher;
-            return this;
+            return PropertyAccess.<Executable,Exception>property(ExecutableThrowsMatcher::execute, "throws a ")
+                    .is(Is.createFrom(this.exceptionOfType, this.expected::cast, "and").is(matcher));
+        }
+
+        private static Exception execute(Executable actual) {
+            try {
+                actual.execute();
+            } catch (Exception e) {
+                return e;
+            }
+            return null;
         }
     }
 
     public static <T extends Exception> ExecutableThrowsMatcher<T> throwsA(Class<T> expected) {
-        return new ExecutableThrowsMatcher<>(expected);
+        return new ExecutableThrowsMatcher<>(expected, isExceptionOfType(expected));
     }
 
     public static <T extends Exception> Matcher<Executable> throwsA(Class<T> expected, Matcher<? super T> matcher) {
 
-        return new ExecutableThrowsMatcher<>(expected).with(matcher);
+        return new ExecutableThrowsMatcher<>(expected, isExceptionOfType(expected)).with(matcher);
     }
 
-    public static <T extends Exception> ExecutableThrowsMatcher<T> throwsAX(Class<T> expected) {
-        return new ExecutableThrowsMatcher<>(expected);
-    }
+    private static <T extends Exception, R> Matcher<T> isExceptionOfType(Class<R> expected) {
+        return new AbstractTerminalMatcher<T>("exception of type <%s>", expected) {
 
-    static Exception execute(Executable actual) {
-        try {
-            actual.execute();
-        } catch (Exception e) {
-            return e;
-        }
-        return null;
-    }
-
-    static <T extends Exception> Matcher<T> isExceptionOfType(Class<?> expected) {
-        return (T actual, ExecutionContext context) -> {
-            // same as isInstanceOf, but different messages
-            context.setExpectation("exception of type <%s>", expected);
-            if (expected.isInstance(actual)) {
-                return true;
+            @Override
+            public boolean doesMatch(T actual, ExecutionContext context) {
+                if (expected.isInstance(actual)) {
+                    return true;
+                }
+                if (actual == null) {
+                    context.setMismatch("nothing");
+                } else {
+                    context.setMismatch("<%s> is not an exception of type <%s>", actual.getClass(), expected);
+                }
+                return false;
             }
-            if (actual == null) {
-                context.setMismatch("nothing");
-            } else {
-                context.setMismatch("<%s> wihich is not an exception of type <%s>", actual.getClass(), expected);
-            }
-            return false;
+
         };
     }
 

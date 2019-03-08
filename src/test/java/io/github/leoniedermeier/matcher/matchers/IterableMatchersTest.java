@@ -3,7 +3,7 @@ package io.github.leoniedermeier.matcher.matchers;
 import static io.github.leoniedermeier.matcher.TestUtils.assertMatcherFalse;
 import static io.github.leoniedermeier.matcher.TestUtils.assertMatcherTrue;
 import static io.github.leoniedermeier.matcher.TestUtils.assertTestMatcher;
-import static io.github.leoniedermeier.matcher.TestUtils.testActualNull;
+import static io.github.leoniedermeier.matcher.TestUtils.testNullNotMatches;
 import static io.github.leoniedermeier.matcher.matchers.IterableMatchers.allMatch;
 import static io.github.leoniedermeier.matcher.matchers.IterableMatchers.anyMatch;
 import static io.github.leoniedermeier.matcher.matchers.IterableMatchers.noneMatch;
@@ -40,7 +40,7 @@ class IterableMatchersTest {
 
         @Test
         void not_matches_null() {
-            testActualNull(IterableMatchers::allMatch);
+            testNullNotMatches(IterableMatchers::allMatch);
         }
     }
 
@@ -63,7 +63,7 @@ class IterableMatchersTest {
 
         @Test
         void not_matches_null() {
-            testActualNull(IterableMatchers::anyMatch);
+            testNullNotMatches(IterableMatchers::anyMatch);
         }
     }
 
@@ -86,33 +86,7 @@ class IterableMatchersTest {
 
         @Test
         void not_matches_null() {
-            testActualNull(IterableMatchers::noneMatch);
-        }
-    }
-
-    @Nested
-    class Size {
-        @Test
-        void matches_iterable() {
-            // path is Iterable but not a Collection
-            assertMatcherTrue(Paths.get("a", "b"), size(2));
-        }
-
-        @Test
-        void matches_collection() {
-            // path is Iterable but not a Collection
-            assertMatcherTrue(asList("1", "2"), size(2));
-        }
-
-        @Test
-        void not_matches() {
-            // path is Iterable but not a Collection
-            assertMatcherFalse(asList("1", "2"), size(3));
-        }
-
-        @Test
-        void not_matches_null() {
-            assertMatcherFalse(null, size(0));
+            testNullNotMatches(IterableMatchers::noneMatch);
         }
     }
 
@@ -124,6 +98,32 @@ class IterableMatchersTest {
             TestMatcher testMatcher = new TestMatcher(true);
             assertMatcherFalse(null, allMatch(testMatcher));
             assertTestMatcher(testMatcher, 0, null);
+        }
+    }
+
+    @Nested
+    class Size {
+        @Test
+        void matches_collection() {
+            // path is Iterable but not a Collection
+            assertMatcherTrue(asList("1", "2"), size(2));
+        }
+
+        @Test
+        void matches_iterable() {
+            // path is Iterable but not a Collection
+            assertMatcherTrue(Paths.get("a", "b"), size(2));
+        }
+
+        @Test
+        void not_matches() {
+            // path is Iterable but not a Collection
+            assertMatcherFalse(asList("1", "2"), size(3));
+        }
+
+        @Test
+        void not_matches_null() {
+            assertMatcherFalse(null, size(0));
         }
     }
 }

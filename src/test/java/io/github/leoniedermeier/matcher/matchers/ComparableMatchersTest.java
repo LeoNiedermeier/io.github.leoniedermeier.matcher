@@ -11,45 +11,45 @@ import java.util.Comparator;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-// TODO: all tests, 
+// TODO: all tests,
 class ComparableMatchersTest {
 
-	@Nested
-	class GreaterOrEqualsThan {
-		@Test
-		void matches_greater() {
-			assertMatcherTrue(ONE, greaterOrEqualsThan(ZERO));
-		}
+    @Nested
+    class GreaterOrEqualsThan {
+        @Test
+        void matches_equals() {
+            assertMatcherTrue(ONE, greaterOrEqualsThan(ONE));
+        }
 
-		@Test
-		void matches_equals() {
-			assertMatcherTrue(ONE, greaterOrEqualsThan(ONE));
-		}
+        @Test
+        void matches_greater() {
+            assertMatcherTrue(ONE, greaterOrEqualsThan(ZERO));
+        }
 
-		@Test
-		void not_matches_less() {
-			assertMatcherFalse(ZERO, greaterOrEqualsThan(ONE));
-		}
+        @Test
+        void not_matches_less() {
+            assertMatcherFalse(ZERO, greaterOrEqualsThan(ONE));
+        }
 
-	}
-	
-	@Nested
-	class GreaterOrEqualsThanWithComparator {
-		@Test
-		void matches_greater() {
-			assertMatcherTrue("1234", greaterOrEqualsThan("ABC", Comparator.comparing(String::length)));
-		}
+    }
 
-		@Test
-		void matches_equals() {
-			assertMatcherTrue("12", greaterOrEqualsThan("AB", Comparator.comparing(String::length)));
-		}
+    @Nested
+    class GreaterOrEqualsThanWithComparator {
+        @Test
+        void matches_equals() {
+            assertMatcherTrue("12", greaterOrEqualsThan("AB", Comparator.comparing(String::length)));
+        }
 
-		@Test
-		void not_matches_less() {
-			assertMatcherFalse("12", greaterOrEqualsThan("ABC", Comparator.comparing(String::length)));
-		}
+        @Test
+        void matches_greater() {
+            assertMatcherTrue("1234", greaterOrEqualsThan("ABC", Comparator.comparing(String::length)));
+        }
 
-	}
+        @Test
+        void not_matches_less() {
+            assertMatcherFalse("12", greaterOrEqualsThan("ABC", Comparator.comparing(String::length)));
+        }
+
+    }
 
 }

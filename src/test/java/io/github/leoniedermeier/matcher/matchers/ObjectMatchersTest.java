@@ -2,7 +2,11 @@ package io.github.leoniedermeier.matcher.matchers;
 
 import static io.github.leoniedermeier.matcher.TestUtils.assertMatcherFalse;
 import static io.github.leoniedermeier.matcher.TestUtils.assertMatcherTrue;
-import static io.github.leoniedermeier.matcher.matchers.ObjectMatchers.*;
+import static io.github.leoniedermeier.matcher.matchers.ObjectMatchers.equalTo;
+import static io.github.leoniedermeier.matcher.matchers.ObjectMatchers.isInstanceOf;
+import static io.github.leoniedermeier.matcher.matchers.ObjectMatchers.isNotNull;
+import static io.github.leoniedermeier.matcher.matchers.ObjectMatchers.isNull;
+import static io.github.leoniedermeier.matcher.matchers.ObjectMatchers.isSameInstance;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -26,6 +30,7 @@ class ObjectMatchersTest {
             assertMatcherFalse("XXX", equalTo("123"));
         }
     }
+
     @Nested
     class IsInstanceOf {
         @Test
@@ -43,22 +48,17 @@ class ObjectMatchersTest {
             assertMatcherFalse(null, isInstanceOf(String.class));
         }
     }
-    
+
     @Nested
-    class IsSameInstance {
+    class IsNotNull {
         @Test
         void matches() {
-            assertMatcherTrue("123", isSameInstance("123"));
+            assertMatcherTrue("1", isNotNull());
         }
 
         @Test
         void not_matches() {
-            assertMatcherFalse("XXX", isSameInstance("123"));
-        }
-
-        @Test
-        void not_matches_null() {
-            assertMatcherFalse(null, isSameInstance("123"));
+            assertMatcherFalse(null, isNotNull());
         }
     }
 
@@ -76,15 +76,20 @@ class ObjectMatchersTest {
     }
 
     @Nested
-    class IsNotNull {
+    class IsSameInstance {
         @Test
         void matches() {
-            assertMatcherTrue("1", isNotNull());
+            assertMatcherTrue("123", isSameInstance("123"));
         }
 
         @Test
         void not_matches() {
-            assertMatcherFalse(null, isNotNull());
+            assertMatcherFalse("XXX", isSameInstance("123"));
+        }
+
+        @Test
+        void not_matches_null() {
+            assertMatcherFalse(null, isSameInstance("123"));
         }
     }
 }

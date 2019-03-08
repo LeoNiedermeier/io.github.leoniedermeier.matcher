@@ -8,49 +8,76 @@ import io.github.leoniedermeier.matcher.Matcher;
 public final class ObjectMatchers {
 
     public static <T> Matcher<T> equalTo(T expected) {
-        return (T actual, ExecutionContext context) -> equalTo(expected, actual, context);
+        return new AbstractTerminalMatcher<T>("is equal to <%s>", expected) {
+
+            @Override
+            public boolean doesMatch(T actual, ExecutionContext context) {
+                if (!Objects.equals(expected, actual)) {
+                    context.setMismatch("<%s> is not equal to <%s>", actual, expected);
+                    return false;
+                }
+                return true;
+            }
+        };
     }
 
     public static <T> Matcher<T> isInstanceOf(Class<?> expected) {
         Objects.requireNonNull(expected, "ObjectMatchers.isInstanceOf - expected is <null>");
-        return (T actual, ExecutionContext context) -> {
-            context.setExpectation("is instance of <%s>", expected);
-            if (actual == null) {
-                context.setMismatch("is null");
+        return new AbstractTerminalMatcher<T>("is instance of <%s>", expected) {
+
+            @Override
+            public boolean doesMatch(@NonNull T actual, ExecutionContext context) {
+                if (!expected.isInstance(actual)) {
+                    context.setMismatch("<%s> is not instance of <%s>", actual, expected);
+                    return false;
+                }
+                return true;
             }
-            context.setMismatch("<%s> is not instance of <%s>", actual, expected);
-            return expected.isInstance(actual);
+
         };
     }
 
     public static <T> Matcher<T> isNotNull() {
-        return (T actual, ExecutionContext context) -> {
-            context.setExpectation("is not <null>");
-            context.setMismatch("is <null>");
-            return Objects.nonNull(actual);
+        return new AbstractTerminalMatcher<T>("is not <null>") {
+
+            @Override
+            public boolean doesMatch(T actual, ExecutionContext context) {
+                if (Objects.isNull(actual)) {
+                    context.setMismatch("is <null>");
+                    return false;
+                }
+                return true;
+            }
         };
     }
 
     public static <T> Matcher<T> isNull() {
-        return (T actual, ExecutionContext context) -> {
-            context.setExpectation("is <null>");
-            context.setMismatch("<%s> is not <null>", actual);
-            return Objects.isNull(actual);
+        return new AbstractTerminalMatcher<T>("is <null>") {
+
+            @Override
+            public boolean doesMatch(T actual, ExecutionContext context) {
+                if (!Objects.isNull(actual)) {
+                    context.setMismatch("<%s> is not <null>", actual);
+                    return false;
+                }
+                return true;
+            }
+
         };
     }
 
     public static <T> Matcher<T> isSameInstance(T expected) {
-        return (T actual, ExecutionContext context) -> {
-            context.setExpectation("is same instance as <%s>", expected);
-            context.setMismatch("<%s> is not same instance as <%s>", actual, expected);
-            return expected == actual;
-        };
-    }
+        return new AbstractTerminalMatcher<T>("is same instance as <%s>", expected) {
 
-    static <T> boolean equalTo(T expected, T actual, ExecutionContext context) {
-        context.setExpectation("is equal to <%s>", expected);
-        context.setMismatch("<%s> is not equal to <%s>", actual, expected);
-        return Objects.equals(expected, actual);
+            @Override
+            public boolean doesMatch(T actual, ExecutionContext context) {
+                if (expected != actual) {
+                    context.setMismatch("<%s> is not same instance as <%s>", actual, expected);
+                    return false;
+                }
+                return true;
+            }
+        };
     }
 
     private ObjectMatchers() {

@@ -1,7 +1,7 @@
 package io.github.leoniedermeier.matcher.matchers;
 
-import static io.github.leoniedermeier.matcher.TestUtils.*;
-import static io.github.leoniedermeier.matcher.matchers.IterableMatchers.size;
+import static io.github.leoniedermeier.matcher.TestUtils.assertMatcherFalse;
+import static io.github.leoniedermeier.matcher.TestUtils.assertMatcherTrue;
 import static io.github.leoniedermeier.matcher.matchers.StringMatchers.endsWith;
 import static io.github.leoniedermeier.matcher.matchers.StringMatchers.length;
 import static io.github.leoniedermeier.matcher.matchers.StringMatchers.startsWith;
@@ -31,6 +31,25 @@ class StringMatchersTest {
     }
 
     @Nested
+    class Length {
+
+        @Test
+        void matches() {
+            assertMatcherTrue("123", length(3));
+        }
+
+        @Test
+        void not_matches() {
+            assertMatcherFalse("123", length(4));
+        }
+
+        @Test
+        void not_matches_null() {
+            assertMatcherFalse(null, length(0));
+        }
+    }
+
+    @Nested
     class StartsWith {
 
         @Test
@@ -46,25 +65,6 @@ class StringMatchersTest {
         @Test
         void not_matches_null() {
             assertMatcherFalse(null, startsWith("xyz"));
-        }
-    }
-
-    @Nested
-    class Length {
-
-        @Test
-        void matches() {
-            assertMatcherTrue("123", length(3));
-        }
-
-        @Test
-        void not_matches() {
-            assertMatcherFalse("123", length(4));
-        }
-
-        @Test
-        void not_matches_null() {
-            assertMatcherFalse(null, size(0));
         }
     }
 }

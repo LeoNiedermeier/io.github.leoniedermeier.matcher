@@ -4,43 +4,52 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class TestMatcher implements Matcher<Object> {
+public class TestMatcher implements BaseMatcher<Object> {
 
-	private int numberOfInvocations = 0;
-	private List<Object> actuals = new ArrayList<>();
-	private Predicate<Object> predicate;
+    private List<Object> actuals = new ArrayList<>();
+    private int numberOfInvocations = 0;
+    private Predicate<Object> predicate;
 
-	public TestMatcher(boolean value) {
-		this.predicate = x -> value;
-	}
-	public TestMatcher(Predicate<Object> predicate) {
-		this.predicate = predicate;
-	}
+    public TestMatcher(boolean value) {
+        super();
+        this.predicate = x -> value;
+    }
 
-	@Override
-	public boolean doesMatch(Object actual, ExecutionContext context) {
-		context.setExpectation("TestMatcher");
-		context.setMismatch("TestMatcher mismatch");
-		this.numberOfInvocations++;
-		this.actuals.add(actual);
-		return this.predicate.test(actual);
-	}
+    public TestMatcher(Predicate<Object> predicate) {
+        super();
+        this.predicate = predicate;
+    }
 
-	public Object getActual() {
-		if (actuals.size() == 0) {
-			return null;
-		} else if (actuals.size() == 1) {
-			return actuals.get(0);
-		}
-		return actuals;
-	}
+    @Override
+    public boolean doesMatch(Object actual, ExecutionContext context) {
+        this.numberOfInvocations++;
+        this.actuals.add(actual);
+        if (!this.predicate.test(actual)) {
+            context.setMismatch("TestMatcher mismatch");
+            return false;
+        }
+        return true;
+    }
 
-	public boolean isCalled() {
-		return numberOfInvocations > 0;
-	}
+    public Object getActual() {
+        if (this.actuals.size() == 0) {
+            return null;
+        } else if (this.actuals.size() == 1) {
+            return this.actuals.get(0);
+        }
+        return this.actuals;
+    }
 
-	public int getNumberOfInvocations() {
-		return numberOfInvocations;
-	}
+    @Override
+    public Entry getExpectation() {
+        return new Entry("Testmatcher");
+    }
 
+    public int getNumberOfInvocations() {
+        return this.numberOfInvocations;
+    }
+
+    public boolean isCalled() {
+        return this.numberOfInvocations > 0;
+    }
 }
