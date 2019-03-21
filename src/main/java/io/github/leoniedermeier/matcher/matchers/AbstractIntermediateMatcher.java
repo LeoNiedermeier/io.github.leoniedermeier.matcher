@@ -4,14 +4,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import io.github.leoniedermeier.matcher.BaseMatcher;
-import io.github.leoniedermeier.matcher.Entry;
 import io.github.leoniedermeier.matcher.Matcher;
+import io.github.leoniedermeier.matcher.imp.BaseMatcher;
+import io.github.leoniedermeier.matcher.imp.Message;
+import io.github.leoniedermeier.matcher.imp.ExpectedMessage;
 
-public abstract class AbstractIntermediateMatcher<T> implements BaseMatcher<T> {
+public abstract class AbstractIntermediateMatcher<T> extends BaseMatcher<T> {
 
     private final List<BaseMatcher<?>> childs = new ArrayList<>();
-    private final Entry expectation;
+    private final Message expectation;
 
     public AbstractIntermediateMatcher(String text, Matcher<?>... childs) {
         super();
@@ -22,16 +23,16 @@ public abstract class AbstractIntermediateMatcher<T> implements BaseMatcher<T> {
                 this.childs.add(new BaseMatcherAdapter<>(matcher));
             }
         }
-        this.expectation = text != null ? new Entry(text) : null;
+        this.expectation = text != null ? new ExpectedMessage(text, null) : null;
     }
 
     @Override
-    public Collection<BaseMatcher<?>> getChilds() {
+    protected Collection<BaseMatcher<?>> getChilds() {
         return this.childs;
     }
 
     @Override
-    public Entry getExpectation() {
+    protected Message getExpectation() {
         return this.expectation;
     }
 }

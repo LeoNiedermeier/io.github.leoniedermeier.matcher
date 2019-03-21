@@ -2,8 +2,8 @@ package io.github.leoniedermeier.matcher.matchers;
 
 import java.util.function.Function;
 
-import io.github.leoniedermeier.matcher.ExecutionContext;
 import io.github.leoniedermeier.matcher.Matcher;
+import io.github.leoniedermeier.matcher.imp.ExecutionContext;
 
 public class TransformingMatcher<T, R> extends AbstractIntermediateMatcher<T> {
     private String description;
@@ -19,12 +19,10 @@ public class TransformingMatcher<T, R> extends AbstractIntermediateMatcher<T> {
     }
 
     @Override
-    public boolean doesMatch(@NonNull T actual, ExecutionContext context) {
+    protected void doesMatch(ExecutionContext executionContext, @NonNull T actual) {
         R transformed = this.transformer.apply(actual);
-        if (!this.matcherForTransformedValue.matches(transformed, context)) {
-            context.setMismatch(this.description);
-            return false;
+        if (!this.matcherForTransformedValue.matches(executionContext, transformed)) {
+            executionContext.mismatch(description);
         }
-        return true;
     }
 }

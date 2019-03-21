@@ -1,19 +1,29 @@
 package io.github.leoniedermeier.matcher.matchers;
 
-import io.github.leoniedermeier.matcher.BaseMatcher;
-import io.github.leoniedermeier.matcher.Entry;
+import io.github.leoniedermeier.matcher.imp.BaseMatcher;
+import io.github.leoniedermeier.matcher.imp.Message;
+import io.github.leoniedermeier.matcher.imp.ExpectedMessage;
 
-public abstract class AbstractTerminalMatcher<T> implements BaseMatcher<T> {
+public abstract class AbstractTerminalMatcher<T> extends BaseMatcher<T> {
 
-    private final Entry expectation;
+    private final ExpectedMessage expectation;
 
-    public AbstractTerminalMatcher(String text, Object... arguments) {
+    protected AbstractTerminalMatcher(ExpectedMessage expectation) {
+        this.expectation = expectation;
+    }
+    
+    protected AbstractTerminalMatcher(String text ) {
         super();
-        this.expectation = text != null ? new Entry(text, arguments) : null;
+        this.expectation = text != null ? new ExpectedMessage(text, null) : null;
+    }
+
+    protected AbstractTerminalMatcher(String text, Object expected) {
+        super();
+        this.expectation = text != null ? new ExpectedMessage(text, expected) : null;
     }
 
     @Override
-    public Entry getExpectation() {
+    protected Message getExpectation() {
         return this.expectation;
     }
 }

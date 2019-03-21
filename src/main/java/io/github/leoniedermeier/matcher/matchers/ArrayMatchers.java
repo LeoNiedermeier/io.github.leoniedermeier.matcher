@@ -6,18 +6,18 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import io.github.leoniedermeier.matcher.ExecutionContext;
 import io.github.leoniedermeier.matcher.Matcher;
+import io.github.leoniedermeier.matcher.imp.ExecutionContext;
 import io.github.leoniedermeier.matcher.matchers.ArrayMatchersUtils.IndexEntry;
 
 public class ArrayMatchers {
 
     public static <T> Matcher<T> equalTo(T expected) {
         Objects.requireNonNull(expected, "ArrayMatchers.euqalTo -  expected array is <null>");
-        AbstractTerminalMatcher<T> matcher = new AbstractTerminalMatcher<T>("arrays equals") {
+        AbstractTerminalMatcher<T> matcher = new AbstractTerminalMatcher<T>("arrays equals", null) {
 
             @Override
-            public boolean doesMatch(T actual, ExecutionContext context) {
+            protected void doesMatch(ExecutionContext executionContext, T actual) {
                 LinkedList<IndexEntry> indices = new LinkedList<>();
                 boolean matches = ArrayMatchersUtils.deepEquals0(actual, expected, indices);
                 if (!matches) {
@@ -35,9 +35,9 @@ public class ArrayMatchers {
                     } else {
                         message += ", expected <%s> but was <%s>";
                     }
-                    context.setMismatch(message, last.getValue1(), last.getValue2());
+                    executionContext.mismatch(message, last.getValue1(), last.getValue2());
                 }
-                return matches;
+
             }
         };
         return Is.<T, T>createFrom(isArray(), Function.identity(), "and").is(matcher);
@@ -45,15 +45,13 @@ public class ArrayMatchers {
 
     public static <T> Matcher<T> isArray() {
 
-        return new AbstractTerminalMatcher<T>("is an array") {
+        return new AbstractTerminalMatcher<T>("is an array", null) {
 
             @Override
-            public boolean doesMatch(T actual, ExecutionContext context) {
+            protected void doesMatch(ExecutionContext executionContext, T actual) {
                 if (!actual.getClass().isArray()) {
-                    context.setMismatch("<%s> is not an array", actual);
-                    return false;
+                    executionContext.mismatch("<%s> is not an array", actual, null);
                 }
-                return true;
             }
         };
     }

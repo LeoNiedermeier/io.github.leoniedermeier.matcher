@@ -5,8 +5,8 @@ import java.util.Objects;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import io.github.leoniedermeier.matcher.ExecutionContext;
 import io.github.leoniedermeier.matcher.Matcher;
+import io.github.leoniedermeier.matcher.imp.ExecutionContext;
 
 public final class IterableMatchers {
 
@@ -20,13 +20,11 @@ public final class IterableMatchers {
         }
 
         @Override
-        public boolean doesMatch(@NonNull Iterable<T> actual, ExecutionContext context) {
+        protected void doesMatch(ExecutionContext executionContext, @NonNull Iterable<T> actual) {
             Stream<T> stream = StreamSupport.stream(actual.spliterator(), false);
-            if (!this.streamMatcher.matches(stream, context)) {
-                context.setMismatch("iterable");
-                return false;
+            if (!this.streamMatcher.matches(executionContext, stream)) {
+                executionContext.mismatch("iterable");
             }
-            return true;
         }
     }
 
@@ -56,12 +54,10 @@ public final class IterableMatchers {
         return new AbstractIntermediateMatcher<Iterable<T>>("a iterable with size", matcher) {
 
             @Override
-            public boolean doesMatch(@NonNull Iterable<T> actual, ExecutionContext context) {
-                if (!matcher.matches(calculateSize(actual), context)) {
-                    context.setMismatch("a iterable with size");
-                    return false;
+            protected void doesMatch(ExecutionContext executionContext, @NonNull Iterable<T> actual) {
+                if (!matcher.matches(executionContext,calculateSize(actual))) {
+                    executionContext.mismatch("a iterable with size");
                 }
-                return true;
             }
 
         };

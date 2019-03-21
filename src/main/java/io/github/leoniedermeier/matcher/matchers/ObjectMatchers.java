@@ -2,8 +2,8 @@ package io.github.leoniedermeier.matcher.matchers;
 
 import java.util.Objects;
 
-import io.github.leoniedermeier.matcher.ExecutionContext;
 import io.github.leoniedermeier.matcher.Matcher;
+import io.github.leoniedermeier.matcher.imp.ExecutionContext;
 
 public final class ObjectMatchers {
 
@@ -11,12 +11,10 @@ public final class ObjectMatchers {
         return new AbstractTerminalMatcher<T>("is equal to <%s>", expected) {
 
             @Override
-            public boolean doesMatch(T actual, ExecutionContext context) {
+            protected void doesMatch(ExecutionContext executionContext, T actual) {
                 if (!Objects.equals(expected, actual)) {
-                    context.setMismatch("<%s> is not equal to <%s>", actual, expected);
-                    return false;
+                    executionContext.mismatch("<%s> is not equal to <%s>", actual, expected);
                 }
-                return true;
             }
         };
     }
@@ -26,14 +24,11 @@ public final class ObjectMatchers {
         return new AbstractTerminalMatcher<T>("is instance of <%s>", expected) {
 
             @Override
-            public boolean doesMatch(@NonNull T actual, ExecutionContext context) {
+            protected void doesMatch(ExecutionContext executionContext, @NonNull T actual) {
                 if (!expected.isInstance(actual)) {
-                    context.setMismatch("<%s> is not instance of <%s>", actual, expected);
-                    return false;
+                    executionContext.mismatch("<%s> is not instance of <%s>", actual, expected);
                 }
-                return true;
             }
-
         };
     }
 
@@ -41,12 +36,10 @@ public final class ObjectMatchers {
         return new AbstractTerminalMatcher<T>("is not <null>") {
 
             @Override
-            public boolean doesMatch(T actual, ExecutionContext context) {
+            protected void doesMatch(ExecutionContext executionContext, T actual) {
                 if (Objects.isNull(actual)) {
-                    context.setMismatch("is <null>");
-                    return false;
+                    executionContext.mismatch("is <null>");
                 }
-                return true;
             }
         };
     }
@@ -55,14 +48,11 @@ public final class ObjectMatchers {
         return new AbstractTerminalMatcher<T>("is <null>") {
 
             @Override
-            public boolean doesMatch(T actual, ExecutionContext context) {
+            protected void doesMatch(ExecutionContext executionContext, T actual) {
                 if (!Objects.isNull(actual)) {
-                    context.setMismatch("<%s> is not <null>", actual);
-                    return false;
+                    executionContext.mismatch("<%s> is not <null>", actual, null);
                 }
-                return true;
             }
-
         };
     }
 
@@ -70,12 +60,10 @@ public final class ObjectMatchers {
         return new AbstractTerminalMatcher<T>("is same instance as <%s>", expected) {
 
             @Override
-            public boolean doesMatch(T actual, ExecutionContext context) {
+            protected void doesMatch(ExecutionContext executionContext, T actual) {
                 if (expected != actual) {
-                    context.setMismatch("<%s> is not same instance as <%s>", actual, expected);
-                    return false;
+                    executionContext.mismatch("<%s> is not same instance as <%s>", actual, expected);
                 }
-                return true;
             }
         };
     }

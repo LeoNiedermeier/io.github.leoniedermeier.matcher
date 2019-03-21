@@ -38,7 +38,7 @@ import io.github.leoniedermeier.matcher.matchers.ObjectMatchers;
 import io.github.leoniedermeier.matcher.matchers.OptionalMatchers;
 import io.github.leoniedermeier.matcher.matchers.StringMatchers;
 
-@org.junit.jupiter.api.Disabled
+//@org.junit.jupiter.api.Disabled
 class TestFailuresTest {
 
     @Nested
@@ -212,6 +212,10 @@ class TestFailuresTest {
             MatcherAssert.assertThat("123X", not(endsWith("X")));
         }
 
+        @Test
+        void or_failure() {
+            MatcherAssert.assertThat("1234", startsWith("X").or(endsWith("Y")));
+        }
     }
 
     @Nested

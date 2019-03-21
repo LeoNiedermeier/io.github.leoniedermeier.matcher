@@ -3,7 +3,8 @@ package io.github.leoniedermeier.matcher.matchers;
 import java.lang.reflect.Array;
 import java.util.Deque;
 
-import io.github.leoniedermeier.matcher.Entry;
+import io.github.leoniedermeier.matcher.imp.Message;
+import io.github.leoniedermeier.matcher.imp.MismatchMessage;
 
 // copied and modified from java.util.Arrays.deepEquals0(Object, Object)
 public class ArrayMatchersUtils {
@@ -11,7 +12,7 @@ public class ArrayMatchersUtils {
     public static class IndexEntry {
 
         private final Integer index;
-        private Entry mismatch;
+        private Message mismatch;
         private final Object value1;
         private final Object value2;
 
@@ -22,22 +23,22 @@ public class ArrayMatchersUtils {
         }
 
         public Integer getIndex() {
-            return this.index;
+            return index;
         }
 
-        public Entry getMismatch() {
-            return this.mismatch;
+        public Message getMismatch() {
+            return mismatch;
         }
 
         public Object getValue1() {
-            return this.value1;
+            return value1;
         }
 
         public Object getValue2() {
-            return this.value2;
+            return value2;
         }
 
-        public void setMismatch(Entry mismatch) {
+        public void setMismatch(Message mismatch) {
             this.mismatch = mismatch;
         }
     }
@@ -54,7 +55,7 @@ public class ArrayMatchersUtils {
         }
         if (arraysOfDifferentLength(e1, e2)) {
             IndexEntry entry = new IndexEntry(null, e1, e2);
-            entry.mismatch = new Entry("arrays have differnt length <%s> and <%s>", Array.getLength(e1),
+            entry.mismatch = new MismatchMessage("arrays have differnt length <%s> and <%s>", Array.getLength(e1),
                     Array.getLength(e2));
             indices.add(entry);
             return false;

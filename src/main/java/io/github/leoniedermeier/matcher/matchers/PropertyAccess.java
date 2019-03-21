@@ -2,8 +2,8 @@ package io.github.leoniedermeier.matcher.matchers;
 
 import java.util.function.Function;
 
-import io.github.leoniedermeier.matcher.ExecutionContext;
 import io.github.leoniedermeier.matcher.Matcher;
+import io.github.leoniedermeier.matcher.imp.ExecutionContext;
 
 public final class PropertyAccess {
 
@@ -16,12 +16,11 @@ public final class PropertyAccess {
         return new AbstractIntermediateMatcher<T>(description, matcher) {
 
             @Override
-            public boolean doesMatch(@NonNull T actual, ExecutionContext context) {
-                if (!matcher.matches(transformer.apply(actual), context)) {
-                    context.setMismatch(description);
-                    return false;
+            protected void doesMatch(ExecutionContext executionContext, @NonNull T actual) {
+                R transformed = transformer.apply(actual);
+                if (!matcher.matches(executionContext, transformed)) {
+                    executionContext.mismatch(description);
                 }
-                return true;
             }
         };
     }

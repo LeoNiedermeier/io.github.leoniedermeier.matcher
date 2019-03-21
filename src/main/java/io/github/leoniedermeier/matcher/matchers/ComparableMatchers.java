@@ -4,8 +4,8 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.IntPredicate;
 
-import io.github.leoniedermeier.matcher.ExecutionContext;
 import io.github.leoniedermeier.matcher.Matcher;
+import io.github.leoniedermeier.matcher.imp.ExecutionContext;
 
 public final class ComparableMatchers {
 
@@ -63,15 +63,15 @@ public final class ComparableMatchers {
         Objects.requireNonNull(comparator, "ComparableMatchers - comparator is <null>");
 
         return new AbstractTerminalMatcher<T>(
-                "is " + compare.expectationText + " <%s>" + (ld ? " compared by <%s>" : ""), expected, comparator) {
+                String.format("is " + compare.expectationText + " <%s>" + (ld ? " compared by <%s>" : ""), expected,
+                        comparator),
+                expected) {
 
             @Override
-            public boolean doesMatch(T actual, ExecutionContext context) {
+            protected void doesMatch(ExecutionContext executionContext, T actual) {
                 if (!compare.predicate.test(comparator.compare(actual, expected))) {
-                    context.setMismatch("<%s> which is not " + compare.expectationText + " <%s>", actual, expected);
-                    return false;
+                    executionContext.mismatch("<%s> which is not " + compare.expectationText + " <%s>", actual, expected);
                 }
-                return true;
             }
         };
     }

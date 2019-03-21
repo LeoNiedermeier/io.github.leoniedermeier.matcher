@@ -1,7 +1,7 @@
 package io.github.leoniedermeier.matcher.matchers;
 
-import io.github.leoniedermeier.matcher.ExecutionContext;
 import io.github.leoniedermeier.matcher.Matcher;
+import io.github.leoniedermeier.matcher.imp.ExecutionContext;
 
 /**
  * <h1>NOTE (from javadoc):</h1> An {@code Error} is a subclass of
@@ -22,7 +22,17 @@ public final class ExceptionMatchers {
 
     public static class ExecutableThrowsMatcher<T extends Exception> extends AbstractIntermediateMatcher<Executable> {
 
+        private static Exception execute(Executable actual) {
+            try {
+                actual.execute();
+            } catch (Exception e) {
+                return e;
+            }
+            return null;
+        }
+
         private Matcher<Exception> exceptionOfType;
+
         private Class<T> expected;
 
         public ExecutableThrowsMatcher(Class<T> expected, Matcher<Exception> exceptionOfType) {
@@ -31,29 +41,18 @@ public final class ExceptionMatchers {
             this.exceptionOfType = exceptionOfType;
         }
 
-        @Override
-        public boolean doesMatch(Executable actual, ExecutionContext context) {
-            // Details in matcher below
-            Exception exception = execute(actual);
-            if (!this.exceptionOfType.matches(exception, context)) {
-                context.setMismatch("execution throws");
-                return false;
-            }
-            return true;
-        }
-
         public Matcher<Executable> with(Matcher<? super T> matcher) {
-            return PropertyAccess.<Executable,Exception>property(ExecutableThrowsMatcher::execute, "throws a ")
+            return PropertyAccess.<Executable, Exception>property(ExecutableThrowsMatcher::execute, "throws a ")
                     .is(Is.createFrom(this.exceptionOfType, this.expected::cast, "and").is(matcher));
         }
 
-        private static Exception execute(Executable actual) {
-            try {
-                actual.execute();
-            } catch (Exception e) {
-                return e;
+        @Override
+        protected void doesMatch(ExecutionContext executionContext, Executable actual) {
+            // Details in matcher below
+            Exception exception = execute(actual);
+            if (!this.exceptionOfType.matches(executionContext, exception)) {
+                executionContext.mismatch("execution throws");
             }
-            return null;
         }
     }
 
@@ -70,18 +69,16 @@ public final class ExceptionMatchers {
         return new AbstractTerminalMatcher<T>("exception of type <%s>", expected) {
 
             @Override
-            public boolean doesMatch(T actual, ExecutionContext context) {
+            protected void doesMatch(ExecutionContext executionContext, T actual) {
                 if (expected.isInstance(actual)) {
-                    return true;
+                    return;
                 }
                 if (actual == null) {
-                    context.setMismatch("nothing");
+                    executionContext.mismatch("nothing", null, expected);
                 } else {
-                    context.setMismatch("<%s> is not an exception of type <%s>", actual.getClass(), expected);
+                    executionContext.mismatch("<%s> is not an exception of type <%s>", actual.getClass(), expected);
                 }
-                return false;
             }
-
         };
     }
 

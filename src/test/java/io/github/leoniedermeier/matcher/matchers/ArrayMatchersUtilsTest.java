@@ -73,7 +73,7 @@ class ArrayMatchersUtilsTest {
             for (int i = 0; i < arrays.length; i++) {
                 for (int j = 0; j < arrays.length; j++) {
                     if (i != j) {
-                        assertFalse(deepEquals0(arrays[i], arrays[j], ArrayMatchersUtilsTest.this.indices));
+                        assertFalse(deepEquals0(arrays[i], arrays[j], indices));
                     }
                 }
             }
@@ -84,7 +84,7 @@ class ArrayMatchersUtilsTest {
             Object[] arrays = new Object[] { new Object[1], new byte[1], new short[1], new int[1], new long[1],
                     new char[1], new double[1], new float[1], new boolean[1] };
             for (int i = 0; i < arrays.length; i++) {
-                assertTrue(deepEquals0(arrays[i], arrays[i], ArrayMatchersUtilsTest.this.indices));
+                assertTrue(deepEquals0(arrays[i], arrays[i], indices));
             }
         }
     }
@@ -94,40 +94,40 @@ class ArrayMatchersUtilsTest {
 
         @Test
         void arrays_and_not_array() {
-            assertFalse(deepEquals0(new int[1], new Object(), ArrayMatchersUtilsTest.this.indices));
+            assertFalse(deepEquals0(new int[1], new Object(), indices));
         }
 
         @Test
         void arrays_with_differnet_length() {
-            assertFalse(deepEquals0(new int[1], new int[2], ArrayMatchersUtilsTest.this.indices));
+            assertFalse(deepEquals0(new int[1], new int[2], indices));
         }
 
         @Test
         void both_objects_null() {
-            assertTrue(deepEquals0(null, null, ArrayMatchersUtilsTest.this.indices));
+            assertTrue(deepEquals0(null, null, indices));
         }
 
         @Test
         void equal_objects() {
-            assertTrue(deepEquals0(new String("a"), new String("a"), ArrayMatchersUtilsTest.this.indices));
+            assertTrue(deepEquals0(new String("a"), new String("a"), indices));
         }
 
         @Test
         void first_object_null() {
             Object object = new Object();
-            assertFalse(deepEquals0(null, object, ArrayMatchersUtilsTest.this.indices));
+            assertFalse(deepEquals0(null, object, indices));
         }
 
         @Test
         void same_objects() {
             Object object = new Object();
-            assertTrue(deepEquals0(object, object, ArrayMatchersUtilsTest.this.indices));
+            assertTrue(deepEquals0(object, object, indices));
         }
 
         @Test
         void secound_object_null() {
             Object object = new Object();
-            assertFalse(deepEquals0(object, null, ArrayMatchersUtilsTest.this.indices));
+            assertFalse(deepEquals0(object, null, indices));
         }
     }
 
@@ -138,17 +138,17 @@ class ArrayMatchersUtilsTest {
         void array_2d_equal() {
             int[][] array1 = { { 11, 12 }, { 21, 22 } };
             int[][] array2 = { { 11, 12 }, { 21, 22 } };
-            assertTrue(deepEquals0(array1, array2, ArrayMatchersUtilsTest.this.indices));
+            assertTrue(deepEquals0(array1, array2, indices));
         }
 
         @Test
         void array_2d_not_equal() {
             int[][] array1 = { { 11, 12 }, { 21, 22 } };
             int[][] array2 = { { 11, 12 }, { 99, 22 } };
-            assertFalse(deepEquals0(array1, array2, ArrayMatchersUtilsTest.this.indices));
-            assertTrue(ArrayMatchersUtilsTest.this.indices.size() == 2);
-            assertTrue(ArrayMatchersUtilsTest.this.indices.get(0).getIndex() == 1);
-            assertTrue(ArrayMatchersUtilsTest.this.indices.get(1).getIndex() == 0);
+            assertFalse(deepEquals0(array1, array2, indices));
+            assertTrue(indices.size() == 2);
+            assertTrue(indices.get(0).getIndex() == 1);
+            assertTrue(indices.get(1).getIndex() == 0);
         }
     }
 
@@ -167,11 +167,4 @@ class ArrayMatchersUtilsTest {
     }
 
     private LinkedList<IndexEntry> indices = new LinkedList<>();
-
-    @Test
-    void doasd() {
-        Object a = new String[] { "1" };
-        System.out.println(a.getClass().getComponentType().isPrimitive());
-        System.out.println(a instanceof Number[]);
-    }
 }

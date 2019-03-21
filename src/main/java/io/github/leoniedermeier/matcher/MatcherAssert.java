@@ -1,5 +1,9 @@
 package io.github.leoniedermeier.matcher;
 
+import io.github.leoniedermeier.matcher.imp.BaseMatcher;
+import io.github.leoniedermeier.matcher.imp.ExecutionContext;
+import io.github.leoniedermeier.matcher.imp.ExpectationMessageCreator;
+
 public final class MatcherAssert {
     public static void assertThat(String reason, boolean assertion) {
         if (!assertion) {
@@ -8,22 +12,12 @@ public final class MatcherAssert {
     }
 
     public static <T> void assertThat(String reason, T actual, Matcher<? super T> matcher) {
-        ExecutionContext context = new ExecutionContext();
-
-        boolean matches = matcher.matches(actual, context);
+        ExecutionContext executionContext = new ExecutionContext((BaseMatcher<?>) matcher);
+        boolean matches = matcher.matches(executionContext, actual);
         if (!matches) {
-            ExpectationMessageCreator collector = new ExpectationMessageCreator(context.getTreeEntry());
-            
-            String message = (reason != null ? reason : "") //
-                    + System.lineSeparator() //
-                    +  collector.getMessage();
-            if (context.getActual() != null) {
-                message += System.lineSeparator() //
-                        + ("Actual:")//
-                        + System.lineSeparator() //
-                        + "    " + context.getActual();
-            }
-            throw new AssertionError(message);
+            ExpectationMessageCreator messageCreator = new ExpectationMessageCreator(executionContext.getRootState(), executionContext.getLastActual());
+
+            messageCreator.createAndThrowMultipleFailuresError(reason);
         }
     }
 

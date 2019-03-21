@@ -6,34 +6,37 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.function.Function;
 
+import io.github.leoniedermeier.matcher.imp.BaseMatcher;
+import io.github.leoniedermeier.matcher.imp.ExecutionContext;
+
 public class TestUtils {
 
     public static <T> TestMatcher assertMatcherFalse(T input, Function<TestMatcher, Matcher<T>> matcher) {
-        ExecutionContext context = new ExecutionContext();
         TestMatcher testMatcher = new TestMatcher(true);
-        assertFalse(matcher.apply(testMatcher).matches(input, context), "Matcher returned true");
+        Matcher<T> matcherToUse = matcher.apply(testMatcher);
+        ExecutionContext executionContext = new ExecutionContext((BaseMatcher<?>) matcherToUse);
+        assertFalse(matcherToUse.matches(executionContext, input), "Matcher returned true");
         return testMatcher;
     }
 
     public static <T> ExecutionContext assertMatcherFalse(T actual, Matcher<T> matcher) {
-
-        ExecutionContext context = new ExecutionContext();
-        assertFalse(matcher.matches(actual, context));
-        return context;
-
+        ExecutionContext executionContext = new ExecutionContext((BaseMatcher<?>) matcher);
+        assertFalse(matcher.matches(executionContext, actual));
+        return executionContext;
     }
 
     public static <T> TestMatcher assertMatcherTrue(T input, Function<TestMatcher, Matcher<T>> matcher) {
-        ExecutionContext context = new ExecutionContext();
         TestMatcher testMatcher = new TestMatcher(true);
-        assertTrue(matcher.apply(testMatcher).matches(input, context), "Matcher returned false");
+        Matcher<T> matcherToUse = matcher.apply(testMatcher);
+        ExecutionContext executionContext = new ExecutionContext((BaseMatcher<?>) matcherToUse);
+        assertTrue(matcherToUse.matches(executionContext, input), "Matcher returned false");
         return testMatcher;
     }
 
     public static <T> ExecutionContext assertMatcherTrue(T actual, Matcher<T> matcher) {
-        ExecutionContext context = new ExecutionContext();
-        assertTrue(matcher.matches(actual, context));
-        return context;
+        ExecutionContext executionContext = new ExecutionContext((BaseMatcher<?>) matcher);
+        assertTrue(matcher.matches(executionContext, actual));
+        return executionContext;
     }
 
     public static void assertTestMatcher(TestMatcher testMatcher, int numberOfInvocations, Object actuals) {

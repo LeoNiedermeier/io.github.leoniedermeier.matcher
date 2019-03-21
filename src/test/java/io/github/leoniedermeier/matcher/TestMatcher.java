@@ -4,7 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class TestMatcher implements BaseMatcher<Object> {
+import io.github.leoniedermeier.matcher.imp.BaseMatcher;
+import io.github.leoniedermeier.matcher.imp.ExecutionContext;
+import io.github.leoniedermeier.matcher.imp.ExpectedMessage;
+import io.github.leoniedermeier.matcher.imp.Message;
+
+public class TestMatcher extends BaseMatcher<Object> {
 
     private List<Object> actuals = new ArrayList<>();
     private int numberOfInvocations = 0;
@@ -12,7 +17,7 @@ public class TestMatcher implements BaseMatcher<Object> {
 
     public TestMatcher(boolean value) {
         super();
-        this.predicate = x -> value;
+        predicate = x -> value;
     }
 
     public TestMatcher(Predicate<Object> predicate) {
@@ -21,35 +26,33 @@ public class TestMatcher implements BaseMatcher<Object> {
     }
 
     @Override
-    public boolean doesMatch(Object actual, ExecutionContext context) {
-        this.numberOfInvocations++;
-        this.actuals.add(actual);
-        if (!this.predicate.test(actual)) {
-            context.setMismatch("TestMatcher mismatch");
-            return false;
+    protected void doesMatch(ExecutionContext executionContext, Object actual) {
+        numberOfInvocations++;
+        actuals.add(actual);
+        if (!predicate.test(actual)) {
+            executionContext.mismatch("TestMatcher mismatch");
         }
-        return true;
     }
 
     public Object getActual() {
-        if (this.actuals.size() == 0) {
+        if (actuals.size() == 0) {
             return null;
-        } else if (this.actuals.size() == 1) {
-            return this.actuals.get(0);
+        } else if (actuals.size() == 1) {
+            return actuals.get(0);
         }
-        return this.actuals;
+        return actuals;
     }
 
     @Override
-    public Entry getExpectation() {
-        return new Entry("Testmatcher");
+    protected Message getExpectation() {
+        return new ExpectedMessage("Testmatcher", null);
     }
 
     public int getNumberOfInvocations() {
-        return this.numberOfInvocations;
+        return numberOfInvocations;
     }
 
     public boolean isCalled() {
-        return this.numberOfInvocations > 0;
+        return numberOfInvocations > 0;
     }
 }

@@ -10,8 +10,8 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
-import io.github.leoniedermeier.matcher.ExecutionContext;
 import io.github.leoniedermeier.matcher.Matcher;
+import io.github.leoniedermeier.matcher.imp.ExecutionContext;
 import io.github.leoniedermeier.matcher.matchers.AbstractTerminalMatcher;
 
 class PersonAndPhoneTest {
@@ -28,14 +28,12 @@ class PersonAndPhoneTest {
         return new AbstractTerminalMatcher<Person>("all phone number starts with <%s>", expectation) {
 
             @Override
-            public boolean doesMatch(Person actual, ExecutionContext context) {
+            protected void doesMatch(ExecutionContext executionContext, Person actual) {
                 Optional<String> findAny = actual.getPhones().stream().map(Phone::getNumber)
                         .filter(s -> !s.startsWith(expectation)).findAny();
                 if (findAny.isPresent()) {
-                    context.setMismatch("<%s> a phone number starts not with <%s>", findAny.get(), expectation);
-                    return false;
+                    executionContext.mismatch("<%s> a phone number starts not with <%s>", findAny.get(), expectation);
                 }
-                return true;
             }
         };
     }

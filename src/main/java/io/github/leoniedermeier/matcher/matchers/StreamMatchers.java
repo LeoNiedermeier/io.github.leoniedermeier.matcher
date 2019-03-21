@@ -1,58 +1,59 @@
 package io.github.leoniedermeier.matcher.matchers;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
-import io.github.leoniedermeier.matcher.ExecutionContext;
 import io.github.leoniedermeier.matcher.Matcher;
+import io.github.leoniedermeier.matcher.imp.ExecutionContext;
 
 public final class StreamMatchers {
 
+    abstract static class AbstractStreamMatcher<T> extends AbstractLoopMatcher<Stream<T>> {
+
+        public AbstractStreamMatcher(String text, Matcher<?>... childs) {
+            super(text, childs);
+        }
+
+        @Override
+        protected void doesMatch(ExecutionContext executionContext, @NonNull Stream<T> actual) {
+            List<T> theActuals = new ArrayList<>();
+            doesMatch2(executionContext, actual.peek(theActuals::add));
+            executionContext.setLastActual(theActuals);
+        }
+
+        protected abstract void doesMatch2(ExecutionContext executionContext, Stream<T> actual);
+    }
+
     public static <T> Matcher<Stream<T>> allMatch(Matcher<? super T> matcher) {
         Objects.requireNonNull(matcher, "StreamMatchers.allMatch - matcher is <null>");
-        return new AbstractIntermediateMatcher<Stream<T>>("every item", matcher) {
+        return new AbstractStreamMatcher<T>("every item", matcher) {
 
             @Override
-            public boolean doesMatch(@NonNull Stream<T> actual, ExecutionContext context) {
-
-                List<T> theActuals = new ArrayList<>();
-                boolean allMatched = true;
-                for (Iterator<T> iterator = actual.iterator(); iterator.hasNext();) {
-                    T t = iterator.next();
-                    theActuals.add(t);
-                    if (!matcher.matches(t, context)) {
-                        allMatched = false;
-                        break;
-                    }
+            protected void doesMatch2(ExecutionContext executionContext, Stream<T> actual) {
+                Optional<T> any = actual.filter(t -> !matcher.matches(executionContext, t)).findAny();
+                if (any.isPresent()) {
+                    executionContext.mismatch("one item");
                 }
-                if (!allMatched) {
-                    context.setMismatch("one item");
-                }
-                return allMatched;
             }
         };
     }
 
     public static <T> Matcher<Stream<T>> anyMatch(Matcher<? super T> matcher) {
         Objects.requireNonNull(matcher, "StreamMatchers.anyMatch - matcher is <null>");
-        return new AbstractIntermediateMatcher<Stream<T>>("at least one item", matcher) {
+        return new AbstractStreamMatcher<T>("at least one item", matcher) {
 
             @Override
-            public boolean doesMatch(@NonNull Stream<T> actual, ExecutionContext context) {
-                List<T> theActuals = new ArrayList<>();
-                context.switchInvers();
-                @SuppressWarnings("squid:S3864")
-                // we use peek to collect the processed elements
-                boolean anyMatched = actual.peek(theActuals::add).anyMatch(t -> matcher.matches(t, context));
-                context.setActual(theActuals);
+            protected void doesMatch2(ExecutionContext executionContext, Stream<T> actual) {
+                boolean anyMatched = actual.anyMatch(t -> matcher.matches(executionContext, t));
                 if (!anyMatched) {
-                    context.setMismatch("no item");
+                    executionContext.mismatch("no item");
                 }
-                context.switchInvers();
-                return anyMatched;
             }
         };
 
@@ -60,67 +61,49 @@ public final class StreamMatchers {
 
     public static <T> Matcher<Stream<T>> containsAll(Matcher<? super T>... matchers) {
         Objects.requireNonNull(matchers, "StreamMatchers.containsAll - matcher is <null>");
-        return new AbstractIntermediateMatcher<Stream<T>>("contains all", matchers) {
+        return new AbstractStreamMatcher<T>("contains all", matchers) {
             class Pair {
                 boolean matched;
-                Matcher<? super T> matcher;
+                final Matcher<? super T> matcher;
+
+                public Pair(Matcher<? super T> matcher) {
+                    this.matcher = matcher;
+                }
             }
 
             @Override
-            public boolean doesMatch(Stream<T> actual, ExecutionContext context) {
+            protected void doesMatch2(ExecutionContext executionContext, Stream<T> actual) {
 
-                List<Pair> toTest = fill(matchers);
-                List<T> theActuals = new ArrayList<>();
+                List<Pair> toTest = Stream.of(matchers).map(Pair::new).collect(toList());
                 int numberOfMatched = 0;
                 for (Iterator<T> iterator = actual.iterator(); iterator.hasNext()
                         && numberOfMatched < matchers.length;) {
                     T t = iterator.next();
-                    theActuals.add(t);
-
                     for (Pair current : toTest) {
                         // more than one matcher can match an element
-                        if (!current.matched && current.matcher.matches(t, context)) {
+                        if (!current.matched && current.matcher.matches(executionContext, t)) {
                             current.matched = true;
                             numberOfMatched++;
                         }
                     }
-
                 }
-                context.setActual(theActuals);
                 if (numberOfMatched != matchers.length) {
-                    context.setMismatch("does not contain all of");
-                    return false;
+                    executionContext.mismatch("does not contain all of");
                 }
-                return true;
-            }
-
-            private List<Pair> fill(Matcher<? super T>... matchers) {
-                List<Pair> toTest = new ArrayList<>();
-                for (Matcher<? super T> matcher : matchers) {
-                    Pair pair = new Pair();
-                    pair.matcher = matcher;
-                    toTest.add(pair);
-                }
-                return toTest;
             }
         };
     }
 
     public static <T> Matcher<Stream<T>> noneMatch(Matcher<? super T> matcher) {
         Objects.requireNonNull(matcher, "StreamMatchers.noneMatch - matcher is <null>");
-        return new AbstractIntermediateMatcher<Stream<T>>("no item", matcher) {
+        return new AbstractStreamMatcher<T>("no item", matcher) {
 
             @Override
-            public boolean doesMatch(@NonNull Stream<T> actual, ExecutionContext context) {
-                List<T> theActuals = new ArrayList<>();
-                @SuppressWarnings("squid:S3864")
-                // we use peek to collect the processed elements
-                boolean noneMatched = actual.peek(theActuals::add).noneMatch(t -> matcher.matches(t, context));
-                context.setActual(theActuals);
+            protected void doesMatch2(ExecutionContext executionContext, Stream<T> actual) {
+                boolean noneMatched = actual.noneMatch(t -> matcher.matches(executionContext, t));
                 if (!noneMatched) {
-                    context.setMismatch("one item");
+                    executionContext.mismatch("one item");
                 }
-                return noneMatched;
             }
         };
     }
@@ -134,16 +117,12 @@ public final class StreamMatchers {
         return new AbstractIntermediateMatcher<Stream<T>>("a stream with size", matcher) {
 
             @Override
-            public boolean doesMatch(@NonNull Stream<T> actual, ExecutionContext context) {
-                if (!matcher.matches(actual.count(), context)) {
-                    context.setMismatch("a stream with size");
-                    return false;
+            protected void doesMatch(ExecutionContext executionContext, @NonNull Stream<T> actual) {
+                if (!matcher.matches(executionContext, actual.count())) {
+                    executionContext.mismatch("a stream with size");
                 }
-                return true;
             }
-
         };
-
     }
 
     private StreamMatchers() {
