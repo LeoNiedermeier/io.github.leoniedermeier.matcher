@@ -21,6 +21,8 @@ public final class StreamMatchers {
         }
 
         @Override
+        // peek is used to collect data in an intermediate step.
+        @SuppressWarnings("squid:S3864")
         protected void doesMatch(ExecutionContext executionContext, @NonNull Stream<T> actual) {
             List<T> theActuals = new ArrayList<>();
             doesMatch2(executionContext, actual.peek(theActuals::add));

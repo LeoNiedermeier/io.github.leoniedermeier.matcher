@@ -57,20 +57,23 @@ public final class ComparableMatchers {
         return createMatcher(expected, comparator, true, Compare.LESS_THAN);
     }
 
-    private static <T> Matcher<T> createMatcher(T expected, Comparator<? super T> comparator, boolean ld,
+    private static <T> Matcher<T> createMatcher(T expected, Comparator<? super T> comparator, boolean describeComparator,
             Compare compare) {
         Objects.requireNonNull(expected, "ComparableMatchers - expected is <null>");
         Objects.requireNonNull(comparator, "ComparableMatchers - comparator is <null>");
 
-        return new AbstractTerminalMatcher<T>(
-                String.format("is " + compare.expectationText + " <%s>" + (ld ? " compared by <%s>" : ""), expected,
-                        comparator),
-                expected) {
+        String text = "is " + compare.expectationText + " " + expected;
+        if (describeComparator) {
+            text += " compared by " + comparator;
+        }
+
+        return new AbstractTerminalMatcher<T>(text, expected) {
 
             @Override
             protected void doesMatch(ExecutionContext executionContext, T actual) {
                 if (!compare.predicate.test(comparator.compare(actual, expected))) {
-                    executionContext.mismatch("<%s> which is not " + compare.expectationText + " <%s>", actual, expected);
+                    executionContext.mismatch("<%s> which is not " + compare.expectationText + " <%s>", actual,
+                            expected);
                 }
             }
         };
