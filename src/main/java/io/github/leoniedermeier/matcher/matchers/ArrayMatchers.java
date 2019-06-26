@@ -21,23 +21,27 @@ public class ArrayMatchers {
                 LinkedList<IndexEntry> indices = new LinkedList<>();
                 boolean matches = ArrayMatchersUtils.deepEquals0(actual, expected, indices);
                 if (!matches) {
-                    IndexEntry last = indices.getLast();
-                    String index = indices.stream().map(IndexEntry::getIndex).filter(Objects::nonNull)
-                            .map(String::valueOf).collect(Collectors.joining("][", "[", "]"));
-
-                    String message = "arrays different";
-                    if (!"[]".equals(index)) {
-                        message += " at index" + index;
-                    }
-
-                    if (last.getMismatch() != null) {
-                        message += ": " + last.getMismatch().toString();
-                    } else {
-                        message += ", expected <%s> but was <%s>";
-                    }
-                    executionContext.mismatch(message, last.getValue1(), last.getValue2());
+                    createMessage(executionContext, indices);
                 }
 
+            }
+
+            private void createMessage(ExecutionContext executionContext, LinkedList<IndexEntry> indices) {
+                IndexEntry last = indices.getLast();
+                String index = indices.stream().map(IndexEntry::getIndex).filter(Objects::nonNull)
+                        .map(String::valueOf).collect(Collectors.joining("][", "[", "]"));
+
+                String message = "arrays different";
+                if (!"[]".equals(index)) {
+                    message += " at index" + index;
+                }
+
+                if (last.getMismatch() != null) {
+                    message += ": " + last.getMismatch().toString();
+                } else {
+                    message += ", expected <%s> but was <%s>";
+                }
+                executionContext.mismatch(message, last.getValue1(), last.getValue2());
             }
         };
         return Is.<T, T>createFrom(isArray(), Function.identity(), "and").is(matcher);
